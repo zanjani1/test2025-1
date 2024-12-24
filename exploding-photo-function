@@ -1,0 +1,78 @@
+function explodeImage(imageElement) {
+  // Get the image dimensions
+  const imageWidth = imageElement.width;
+  const imageHeight = imageElement.height;
+
+  // Create a container to hold the exploded pieces
+  const container = document.createElement('div');
+  container.style.position = 'absolute';
+  container.style.top = imageElement.offsetTop + 'px';
+  container.style.left = imageElement.offsetLeft + 'px';
+  container.style.width = imageWidth + 'px';
+  container.style.height = imageHeight + 'px';
+  document.body.appendChild(container);
+
+  // Generate 6 random shapes with varying sizes and positions
+  for (let i = 0; i < 6; i++) {
+    const piece = document.createElement('div');
+    piece.style.position = 'absolute';
+    piece.style.width = Math.floor(Math.random() * imageWidth / 3) + 'px';
+    piece.style.height = Math.floor(Math.random() * imageHeight / 3) + 'px';
+    piece.style.background = `url(${imageElement.src}) no-repeat`;
+    piece.style.backgroundSize = `${imageWidth}px ${imageHeight}px`;
+    piece.style.backgroundPosition = `-${Math.floor(Math.random() * imageWidth)}px -${Math.floor(Math.random() * imageHeight)}px`;
+    piece.style.transformOrigin = `${Math.random() * 100}% ${Math.random() * 100}%`;
+    piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+    piece.style.opacity = 1;
+    piece.style.transition = 'transform 1s ease, opacity 1s ease';
+
+    // Randomly position the piece within the container
+    piece.style.top = `${Math.random() * imageHeight}px`;
+    piece.style.left = `${Math.random() * imageWidth}px`;
+
+    container.appendChild(piece);
+  }
+
+  // Remove the original image
+  imageElement.style.display = 'none';
+
+  // Animate the explosion
+  setTimeout(() => {
+    const pieces = container.querySelectorAll('div');
+    pieces.forEach(piece => {
+      piece.style.transform = `translate(${Math.random() * 100 - 50}%, ${Math.random() * 100 - 50}%) rotate(${Math.random() * 360}deg)`;
+      piece.style.opacity = 0;
+    });
+  }, 100);
+
+  // Remove the container after animation
+  setTimeout(() => {
+    container.remove();
+  }, 1100);
+}
+
+// Example usage:
+const image = document.querySelector('img'); // Select your image element
+
+// Check if the image is in the viewport
+const isInViewport = (element) => {
+  const rect = element.getBoundingClientRect();
+  return (
+    rect.top >= 0 &&
+    rect.left >= 0 &&
+    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+  );
+};
+
+// Call the explode function when the image enters the viewport
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      explodeImage(image);
+      observer.unobserve(image); // Stop observing after explosion
+    }
+  });
+});
+
+observer.observe(image);
